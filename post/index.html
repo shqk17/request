@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>POST</title>
+    <link rel="stylesheet" type="text/css" href="css/normalize.css"/>
+    <link rel="stylesheet" type="text/css" href="css/demo.css"/>
+    <!--必要样式-->
+    <link rel="stylesheet" type="text/css" href="css/component.css"/>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/webuploader.min.js"></script>
+    <!--[if IE]>
+    <script src="/js/html5.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container demo-1">
+    <div class="content">
+        <div id="large-header" class="large-header">
+            <canvas id="demo-canvas"></canvas>
+            <div class="logo_box">
+                <h3>请填写POST参数</h3>
+                <div>
+                	
+                	<div class="aa">
+                		<span class="myspan">链接地址:</span>
+                        <textarea name="url" id ='url' class="textarea" rows="10"  cols="100" style="width:500px;height: 50px" type="text"
+                               placeholder="请输入POST链接地址" ></textarea>
+                    </div>
+                    <div class="aa" id="inputadd">
+						<label id="label1">参数1: <input type="text" name="key" value="" id="key1" style="margin-left: 23px ">: <input type="text" name="value" value="" id="vaule1">
+							<button id="add" value="1" class="act-but" style="font-size: 25px" onclick="addInput()">+</button> 
+						</label>
+                    </div>
+					<div class="aa">
+						<p><input type="file" id="upfile" value="" onchange="start_upload(this)"></p>
+
+						<img src="" id="csimg" width="200" height="200"/>
+						<input type="text" id="uploadimg" />
+					</div>
+
+                    <div class="mb3" style="float: left"><a class="act-but submit" id="submit" onclick="submit()" href="javascript:;"
+                                        style="color: #FFFFFF;margin-left: 100px ">确认</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- /container -->
+<script src="js/TweenLite.min.js"></script>
+<script src="js/EasePack.min.js"></script>
+<script src="js/rAF.js"></script>
+<script src="js/demo-1.js"></script>
+<div style="text-align:center;">
+</div>
+</body>
+<script type="text/javascript">
+	
+	function start_upload(obj){
+			 if(!isCanvasSupported){
+			 	console.log("2222");
+			 }else{
+			 	compress(event, function(base64Img){
+					$("#csimg").attr("src",base64Img);
+					console.log(base64Img);
+					$("#uploadimg").val(base64Img);
+					// 如需保存  或 把base64转成图片  ajax提交后台处理
+					// 我这里采用ajax方式 自己封装的 
+					
+				});
+			 }
+		}
+
+
+	var rowNum = 1;
+
+	 function addInput(){
+	 	var inputStr = '<label id=label'+(rowNum+1)+' style="float: left;">参数'+(rowNum+1)+': <input type="text" name="key" value="" id="key'+(rowNum+1)+'" style="margin-left: 23px ">: <input type="text" value="" name="value" id="vaule'+(rowNum+1)+'"> <button id="delete'+(rowNum+1)+'" value="'+(rowNum+1)+'" class="act-but" style="font-size: 30px" onclick="subInput(this)">-</button></label>';
+	 	$("#inputadd").append(inputStr);
+		rowNum++
+	 }
+	 function subInput(obj){
+	 	   console.log($(obj).attr("value"));
+	 	   // $("#inputadd").removeChild('delete'+$(obj).attr("value"));
+	 	   	var s ='label'+$(obj).attr("value")
+	 	   $("#"+s).remove();
+	 }
+    function submit() {
+        var urls = $("#url").val();
+        var datas = {};
+        var inputStr = $("#inputadd").find('label');
+         for(var i =0;i<inputStr.length;i++){
+			var key = inputStr.get(i).childNodes[1].value;
+			var value =  inputStr.get(i).childNodes[3].value;
+			datas[key]=value;
+         }
+        if (urls == null || urls == '') {
+            alert("请输入链接地址");
+            return;
+        }
+
+        //获取图片
+       
+		datas['table1_img']=$("#uploadimg").val();
+		datas['table2_img']=$("#uploadimg").val();
+		datas['table3_img']=$("#uploadimg").val();
+		datas['table4_img']=$("#uploadimg").val();
+		datas['table5_img']=$("#uploadimg").val();
+		// datas['url']=urls;
+		DownLoad({ //调用下载方法
+                url:urls,data:datas
+                });
+       	
+    }
+
+
+    function DownLoad(options) {
+
+    var config = $.extend(true, { method: 'post' }, options);
+    var $iframe = $('<iframe id="down-file-iframe" />');
+    var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+    $form.attr('action', config.url);
+    for (var key in config.data) {
+    $form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+     }
+    $iframe.append($form);
+    $(document.body).append($iframe);
+    $form[0].submit();
+    $iframe.remove();
+}
+
+	//判断是否存在画布
+function isCanvasSupported() {
+	var elem = document.createElement('canvas');
+	return !!(elem.getContext && elem.getContext('2d'));
+}
+ 
+//压缩方法
+function compress(event, callback) {
+	if ( typeof (FileReader) === 'undefined') {
+		console.log("当前浏览器内核不支持base64图标压缩");
+		//调用上传方式  不压缩
+	} else {
+		try {
+			var file = event.currentTarget.files[0];
+			 if(!/image\/\w+/.test(file.type)){   
+        			alert("请确保文件为图像类型");  
+        			return false;  
+     		 } 
+			var reader = new FileReader();
+			reader.onload = function (e) {
+			var image = $('<img/>');
+			image.on("load",function(){
+			// image.load("",function () {
+			console.log("开始压缩");
+			var square = 700;
+			var canvas = document.createElement('canvas');
+			canvas.width = square;
+			canvas.height = square;
+			var context = canvas.getContext('2d');
+		    context.clearRect(0, 0, square, square);
+			var imageWidth;
+			var imageHeight;
+			var offsetX = 0;
+			var offsetY = 0;
+			if (this.width > this.height) {
+		      imageWidth = Math.round(square * this.width / this.height);
+		      imageHeight = square;
+		      offsetX = - Math.round((imageWidth - square) / 2);
+			} else {
+		      imageHeight = Math.round(square * this.height / this.width);
+		      imageWidth = square;
+		      offsetY = - Math.round((imageHeight - square) / 2);
+			}
+			context.drawImage(this, offsetX, offsetY, imageWidth, imageHeight);
+			var data = canvas.toDataURL('image/jpeg');
+			 	//压缩完成执行回调
+		     	callback(data);
+			});
+			image.attr('src', e.target.result);
+			};
+			reader.readAsDataURL(file);
+		} catch(e) {
+			console.log("压缩失败!");
+			//调用上传方式  不压缩
+		}
+	}
+}
+
+	
+</script>
+</html>
